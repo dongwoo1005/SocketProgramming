@@ -5,7 +5,7 @@
 `make server`
 `make client`
 
-## server program
+## Server program
 ~~~~
 Number of parameters: 1
 Parameter:
@@ -14,7 +14,7 @@ How to run:
       ./server $1
 ~~~~
 
-## client program
+## Client program
 ~~~~
 Number of parameters: 4
 Parameter:
