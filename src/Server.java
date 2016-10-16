@@ -12,11 +12,11 @@ import java.net.*;
  */
 public class Server {
 
-    private static void negotiateUsingTcpSocket(int nPort, String requestCode) throws IOException {
+    private static void negotiateUsingTcpSocket(String requestCode) throws IOException {
 
         // Create a TCP socket on nPort
-        ServerSocket serverTcpSocket = new ServerSocket(nPort);
-        System.out.println("SERVER_PORT=" + nPort);
+        ServerSocket serverTcpSocket = new ServerSocket(0);
+        System.out.println("SERVER_PORT=" + serverTcpSocket.getLocalPort());
 
 
         while (true) {
@@ -90,8 +90,7 @@ public class Server {
         }
 
         String requestCode = args[0];
-        int nPort = 9000;
 
-        negotiateUsingTcpSocket(nPort, requestCode);
+        negotiateUsingTcpSocket(requestCode);
     }
 }

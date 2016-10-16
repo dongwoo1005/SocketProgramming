@@ -35,17 +35,21 @@ public class Client {
             throws IOException {
 
         // Create a TCP connection
+        System.out.println("Create a TCP connection");
         Socket clientTcpSocket = new Socket(serverAddress, nPort);
 
         // Send requestCode
+        System.out.println("Send requestCode");
         DataOutputStream outToServer = new DataOutputStream(clientTcpSocket.getOutputStream());
         outToServer.writeBytes(requestCode + '\n');
 
         // Receive rPort number
+        System.out.println("Receive rPort number");
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientTcpSocket.getInputStream()));
         rPort.setValue(inFromServer.readLine());
 
         // Close TCP socket
+        System.out.println("Close TCP socket");
         clientTcpSocket.close();
     }
 
@@ -53,15 +57,18 @@ public class Client {
             throws IOException {
 
         // Create a UDP socket
+        System.out.println("Create a UDP socket");
         DatagramSocket clientUdpSocket = new DatagramSocket();
 
         // Send packet with message
+        System.out.println("Send packet with message");
         byte[] sendData = message.getBytes();
         InetAddress ipAddress = InetAddress.getByName(serverAddress);
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, rPort.getValue());
         clientUdpSocket.send(sendPacket);
 
         // Receive packet
+        System.out.println("Receive packet");
         byte[] receiveData = new byte[sendData.length];
         DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
         clientUdpSocket.receive(receivePacket);
