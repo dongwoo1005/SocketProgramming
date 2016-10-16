@@ -1,6 +1,8 @@
 # Socket Programming
       
 ## How to compile and make the programs
+- You need minimum of JDK 7
+- Available command:
 `make all`
 `make server`
 `make client`
