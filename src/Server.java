@@ -46,8 +46,6 @@ public class Server {
                 String receivedString = new String(receivePacket.getData());
 
                 StringBuilder stringBuilder = new StringBuilder(receivedString.replaceAll("\0", ""));
-                System.out.println(receivedString.replaceAll("\0", ""));
-
                 byte[] sendData = stringBuilder.reverse().toString().getBytes();
                 InetAddress ipAddress = receivePacket.getAddress();
                 int port = receivePacket.getPort();
