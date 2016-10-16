@@ -7,8 +7,6 @@
 `make server`
 `make client`
 
-
-
 ## Server program
 ~~~~
 Number of parameters: 1
