@@ -2,10 +2,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.net.*;
 
 /**
  * SocketProgramming
@@ -15,6 +12,67 @@ import java.net.Socket;
  */
 public class Client {
 
+    static class RPort {
+        private String value;
+
+        public RPort() {
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return Integer.parseInt(value);
+        }
+
+        public boolean isEmpty() {
+            return value == null;
+        }
+    }
+
+    public static void negotiateUsingTcpSocket(String serverAddress, int nPort, String requestCode, RPort rPort)
+            throws IOException {
+
+        // Create a TCP connection
+        Socket clientTcpSocket = new Socket(serverAddress, nPort);
+
+        // Send requestCode
+        DataOutputStream outToServer = new DataOutputStream(clientTcpSocket.getOutputStream());
+        outToServer.writeBytes(requestCode + '\n');
+
+        // Receive rPort number
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientTcpSocket.getInputStream()));
+        rPort.setValue(inFromServer.readLine());
+
+        // Close TCP socket
+        clientTcpSocket.close();
+    }
+
+    private static void transactUsingUdpSocket(String serverAddress, RPort rPort, String message)
+            throws IOException {
+
+        // Create a UDP socket
+        DatagramSocket clientUdpSocket = new DatagramSocket();
+
+        // Send packet with message
+        byte[] sendData = message.getBytes();
+        InetAddress ipAddress = InetAddress.getByName(serverAddress);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, rPort.getValue());
+        clientUdpSocket.send(sendPacket);
+
+        // Receive packet
+        byte[] receiveData = new byte[sendData.length];
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        clientUdpSocket.receive(receivePacket);
+
+        // Print out reversed message from the packet
+        System.out.println(new String(receivePacket.getData()));
+
+        // Close UDP socket
+        clientUdpSocket.close();
+    }
+
     public static void main(String[] args) throws IOException {
 
         if (args.length != 4) {
@@ -22,39 +80,18 @@ public class Client {
             return;
         }
 
-        String serverAddress = args[0], message = args[3], requestCode = args[2];
+        String serverAddress = args[0];
         int nPort = Integer.parseInt(args[1]);
-        String reversedString, rPort;
+        String requestCode = args[2], message = args[3];
+        RPort rPort = new RPort();
 
-        // Stage 1. Negotiation using TCP sockets
-        Socket clientTcpSocket = new Socket(serverAddress, nPort);
+        negotiateUsingTcpSocket(serverAddress, nPort, requestCode, rPort);
 
-        DataOutputStream outToServer = new DataOutputStream(clientTcpSocket.getOutputStream());
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientTcpSocket.getInputStream()));
-
-        outToServer.writeBytes(requestCode + '\n');
-        rPort = inFromServer.readLine();
-        clientTcpSocket.close();
-        if (rPort == null) {
+        if (rPort.isEmpty()) {
             System.out.println("Error: incorrect request code");
-            return;
+            System.exit(1);
         }
 
-        // Stage 2. Transaction using UDP sockets
-        DatagramSocket clientUdpSocket = new DatagramSocket();
-
-        InetAddress ipAddress = InetAddress.getByName(serverAddress);
-        byte[] sendData = message.getBytes();
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, Integer.parseInt(rPort));
-        clientUdpSocket.send(sendPacket);
-
-        byte[] receiveData = new byte[sendData.length];
-        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-        clientUdpSocket.receive(receivePacket);
-
-        reversedString = new String(receivePacket.getData());
-        System.out.println(reversedString);
-
-        clientUdpSocket.close();
+        transactUsingUdpSocket(serverAddress, rPort, message);
     }
 }
