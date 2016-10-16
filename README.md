@@ -5,6 +5,8 @@
 `make server`
 `make client`
 
+
+
 ## Server program
 ~~~~
 Number of parameters: 1
@@ -25,3 +27,10 @@ Parameter:
 How to run:
       ./client $1 $2 $3 $4
 ~~~~
+
+## Built and Tested Machines
+1. Built and tested client and server in two different student.cs.machines
+      - ubuntu1404-002.student.uwaterloo.ca
+      - ubuntu1404-004.student.uwaterloo.ca
+2. Built and tested both client and server in a single student.cs.machine
+      - ubuntu1404-004.student.uwaterloo.ca
