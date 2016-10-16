@@ -14,7 +14,10 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length != 1) return;
+        if (args.length != 1) {
+            System.err.println("Required command line parameters: <req_code>");
+            return;
+        }
 
         String requestCode = args[0];
         int nPort = 9000;

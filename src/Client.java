@@ -17,7 +17,10 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length != 4) return;
+        if (args.length != 4) {
+            System.err.println("Required command line parameters: <server_address> <n_port> <req_code> <msg>");
+            return;
+        }
 
         String serverAddress = args[0], message = args[3], requestCode = args[2];
         int nPort = Integer.parseInt(args[1]);
