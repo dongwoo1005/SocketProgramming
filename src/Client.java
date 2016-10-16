@@ -6,7 +6,7 @@ import java.net.*;
 
 /**
  * SocketProgramming
- * Created by dwson Son (20420487)
+ * Created by Will Son (20420487)
  * on 10/16/16
  * d3son@uwaterloo.ca
  */
