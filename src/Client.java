@@ -31,6 +31,36 @@ public class Client {
         }
     }
 
+    private static boolean isValidMessage(String s) {
+        return !s.isEmpty() && s.getBytes().length < 1024;
+    }
+
+    private static boolean isValidRequestCode(String s) {
+
+        if (!isValidMessage(s)) return false;
+        for (int i=0; i<s.length(); i+=1) {
+            if (Character.digit(s.charAt(i), 10) < 0) return false;
+        }
+        return true;
+    }
+
+    private static boolean isValidNPort(String s) {
+
+        if (!isValidRequestCode(s)) return false;
+        int port = Integer.parseInt(s);
+        return port > 0 && port <= 0xFFFF;
+    }
+
+    private static boolean isValidServerAddress(String s) {
+        try {
+            InetAddress.getByName(s);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     private static void negotiateUsingTcpSocket(String serverAddress, int nPort, String requestCode, RPort rPort)
             throws IOException {
 
@@ -75,16 +105,38 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
 
+        // Validate command line parameters
         if (args.length != 4) {
             System.err.println("Required command line parameters: <server_address> <n_port> <req_code> <msg>");
-            return;
+            System.exit(1);
         }
 
-        String serverAddress = args[0];
-        int nPort = Integer.parseInt(args[1]);
-        String requestCode = args[2], message = args[3];
-        RPort rPort = new RPort();
+        String serverAddress = isValidServerAddress(args[0]) ? args[0] : null;
+        if (serverAddress == null) {
+            System.err.println("Error: parameter <server_address> is not valid.");
+            System.exit(1);
+        }
 
+        int nPort = isValidNPort(args[1]) ? Integer.parseInt(args[1]) : -1;
+        if (nPort == -1) {
+            System.err.println("Error: parameter <n_port> is not valid.");
+            System.exit(1);
+        }
+
+        String requestCode = isValidRequestCode(args[2]) ? args[2] : null;
+        if (requestCode == null) {
+            System.err.println("Error: parameter <req_code> is not valid.");
+            System.exit(1);
+        }
+
+        String message = isValidMessage(args[3]) ? args[3] : null;
+        if (message == null) {
+            System.err.println("Error: parameter <msg> is not valid.");
+            System.exit(1);
+        }
+
+        // Stage 1
+        RPort rPort = new RPort();
         negotiateUsingTcpSocket(serverAddress, nPort, requestCode, rPort);
 
         if (rPort.isEmpty()) {
@@ -92,6 +144,7 @@ public class Client {
             System.exit(1);
         }
 
+        // Stage 2
         transactUsingUdpSocket(serverAddress, rPort, message);
     }
 }

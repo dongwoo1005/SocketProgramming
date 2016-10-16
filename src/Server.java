@@ -12,6 +12,19 @@ import java.net.*;
  */
 public class Server {
 
+    private static boolean isValidMessage(String s) {
+        return !s.isEmpty() && s.getBytes().length < 1024;
+    }
+
+    private static boolean isValidRequestCode(String s) {
+
+        if (!isValidMessage(s)) return false;
+        for (int i=0; i<s.length(); i+=1) {
+            if (Character.digit(s.charAt(i), 10) < 0) return false;
+        }
+        return true;
+    }
+
     private static void negotiateUsingTcpSocket(String requestCode) throws IOException {
 
         // Create a TCP socket on nPort
@@ -93,13 +106,19 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
+        // Validate command line parameter
         if (args.length != 1) {
             System.err.println("Required command line parameters: <req_code>");
             return;
         }
 
-        String requestCode = args[0];
+        String requestCode = isValidRequestCode(args[0]) ? args[0] : null;
+        if (requestCode == null) {
+            System.err.println("Error: parameter <req_code> is not valid.");
+            System.exit(1);
+        }
 
+        // Begin signaling
         negotiateUsingTcpSocket(requestCode);
     }
 }
