@@ -12,7 +12,7 @@ import java.net.*;
  */
 public class Client {
 
-    static class RPort {
+    private static class RPort {
         private String value;
 
         public RPort() {
@@ -31,7 +31,7 @@ public class Client {
         }
     }
 
-    public static void negotiateUsingTcpSocket(String serverAddress, int nPort, String requestCode, RPort rPort)
+    private static void negotiateUsingTcpSocket(String serverAddress, int nPort, String requestCode, RPort rPort)
             throws IOException {
 
         // Create a TCP connection

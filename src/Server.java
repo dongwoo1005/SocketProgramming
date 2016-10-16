@@ -12,6 +12,76 @@ import java.net.*;
  */
 public class Server {
 
+    private static void negotiateUsingTcpSocket(int nPort, String requestCode) throws IOException {
+
+        // Create a TCP socket on nPort
+        ServerSocket serverTcpSocket = new ServerSocket(nPort);
+        System.out.println("SERVER_PORT=" + nPort);
+
+
+        while (true) {
+            // Listen for a connection to be made
+            Socket connectionTcpSocket = serverTcpSocket.accept();
+
+            // Get request code from client
+            BufferedReader inFromClient =
+                    new BufferedReader(new InputStreamReader(connectionTcpSocket.getInputStream()));
+            String requestCodeFromClient = inFromClient.readLine();
+
+            if (requestCodeFromClient.equals(requestCode)) {    // Request code is verified
+                // Reply back with rPort
+                int rPort = 8999;   // TODO: generate it randomly
+                DataOutputStream outToClient = new DataOutputStream(connectionTcpSocket.getOutputStream());
+                outToClient.writeBytes(String.valueOf(rPort) + '\n');
+
+                transactUsingUdpSocket(rPort);
+            } else {                                            // Request code is not verified
+                connectionTcpSocket.close();                    // Close the TCP connection
+            }
+        }
+    }
+
+    private static void transactUsingUdpSocket(int rPort) throws IOException {
+
+        // Create a UDP socket on rPort
+        DatagramSocket serverUdpSocket = new DatagramSocket(rPort);
+
+        // Receive a packet
+        byte[] receiveData = new byte[1024];
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        serverUdpSocket.receive(receivePacket);
+
+        // Reverse a string from the packet
+        String receivedString = new String(receivePacket.getData());
+        String reversedString = reverseString(receivedString.replaceAll("\0", ""));
+
+        // Reply back the reversed string
+        byte[] sendData = reversedString.getBytes();
+        InetAddress ipAddress = receivePacket.getAddress();
+        int port = receivePacket.getPort();
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, port);
+        serverUdpSocket.send(sendPacket);
+
+        // Close the UDP socket
+        serverUdpSocket.close();
+    }
+
+    private static String reverseString(String s) {
+
+        int maxIndex = s.length() - 1;
+        if (maxIndex < 1) return s;
+
+        char[] charArr = s.toCharArray();
+        // Reverse by swapping
+        for (int i=0; i<=maxIndex/2; i+=1) {
+            char temp = charArr[i];
+            charArr[i] = charArr[maxIndex - i];
+            charArr[maxIndex - i] = temp;
+        }
+
+        return String.valueOf(charArr);
+    }
+
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
@@ -22,40 +92,6 @@ public class Server {
         String requestCode = args[0];
         int nPort = 9000;
 
-        ServerSocket serverTcpSocket = new ServerSocket(nPort);
-        System.out.println("SERVER_PORT=" + nPort);
-
-
-        while (true) {
-            Socket connectionTcpSocket = serverTcpSocket.accept();
-            BufferedReader inFromClient =
-                    new BufferedReader(new InputStreamReader(connectionTcpSocket.getInputStream()));
-            DataOutputStream outToClient = new DataOutputStream(connectionTcpSocket.getOutputStream());
-
-            String requestCodeFromClient = inFromClient.readLine();
-            if (requestCodeFromClient.equals(requestCode)) {
-                int rPort = 8999;   // TODO: generate it randomly
-                outToClient.writeBytes(String.valueOf(rPort) + '\n');
-
-                DatagramSocket serverUdpSocket = new DatagramSocket(rPort);
-
-                byte[] receiveData = new byte[1024];
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                serverUdpSocket.receive(receivePacket);
-
-                String receivedString = new String(receivePacket.getData());
-
-                StringBuilder stringBuilder = new StringBuilder(receivedString.replaceAll("\0", ""));
-                byte[] sendData = stringBuilder.reverse().toString().getBytes();
-                InetAddress ipAddress = receivePacket.getAddress();
-                int port = receivePacket.getPort();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, port);
-                serverUdpSocket.send(sendPacket);
-
-                serverUdpSocket.close();
-            } else {
-                connectionTcpSocket.close();
-            }
-        }
+        negotiateUsingTcpSocket(nPort, requestCode);
     }
 }
